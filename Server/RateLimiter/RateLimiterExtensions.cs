@@ -1,4 +1,6 @@
-﻿namespace Server.RateLimiter;
+﻿using System.Net;
+
+namespace Server.RateLimiter;
 
 public static class RateLimiterExtensions
 {
@@ -7,10 +9,11 @@ public static class RateLimiterExtensions
     {
         var options = new RateLimiterOptions();
         optionsBuilder(options);
-        services.AddSingleton<IRateLimiter>(new RequestsTimeFrameRateLimiter(options));
+        services.AddSingleton<IRateLimiter>(p =>
+            new RequestsTimeFrameRateLimiter(options, p.GetRequiredService<TimeProvider>()));
     }
 
-    public static void UseRequestsTimeFrameRateLimiter(this WebApplication app)
+    public static void UseRequestsTimeFrameRateLimiter(this IApplicationBuilder app)
     {
         app.Use(async (context, next) =>
         {

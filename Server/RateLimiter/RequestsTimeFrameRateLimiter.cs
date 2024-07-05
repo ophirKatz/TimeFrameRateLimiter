@@ -3,16 +3,18 @@
 namespace Server.RateLimiter;
 
 // Using record structs for immutability and easy-copying
-public readonly record struct RequestsTimeFrame(DateTime StartTime, int Count);
+public readonly record struct RequestsTimeFrame(DateTimeOffset StartTime, int Count);
 
 public class RequestsTimeFrameRateLimiter : IRateLimiter
 {
     private readonly RateLimiterOptions _options;
+    private readonly TimeProvider _timeProvider;
     private readonly ConcurrentDictionary<string, RequestsTimeFrame> _timeFrames = new();
 
-    public RequestsTimeFrameRateLimiter(RateLimiterOptions options)    // Not injecting via DI so not using IOptions
+    public RequestsTimeFrameRateLimiter(RateLimiterOptions options, TimeProvider timeProvider)
     {
         _options = options;
+        _timeProvider = timeProvider;
     }
 
     public bool LimitClientRequestsById(string clientId)
@@ -20,10 +22,10 @@ public class RequestsTimeFrameRateLimiter : IRateLimiter
         var isLimitExceeded = false;
         _timeFrames.AddOrUpdate(
             clientId,
-            new RequestsTimeFrame(DateTime.Now, 1),
+            new RequestsTimeFrame(_timeProvider.GetUtcNow(), 1),
             (_, timeFrame) =>
             {
-                var currentTime = DateTime.Now;
+                var currentTime = _timeProvider.GetUtcNow();
                 if (currentTime - _options.TimeFrame > timeFrame.StartTime)
                 {
                     // Start a new time frame
