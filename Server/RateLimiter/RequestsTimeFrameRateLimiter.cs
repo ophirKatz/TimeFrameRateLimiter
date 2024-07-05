@@ -33,7 +33,7 @@ public class RequestsTimeFrameRateLimiter : IRateLimiter
                 }
 
                 var frameWithRequest = timeFrame with { Count = timeFrame.Count + 1 };
-                isLimitExceeded = frameWithRequest.Count >= _options.RequestLimit;
+                isLimitExceeded = frameWithRequest.Count > _options.RequestLimit;
                 return frameWithRequest;
             }
         );

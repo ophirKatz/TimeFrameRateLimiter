@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
+using Server.RateLimiter;
 using Shouldly;
 using System.Net;
 
@@ -20,6 +22,14 @@ public class RateLimiterTests : IDisposable
         _server = new TestServer(
             new WebHostBuilder()
                 .UseStartup<Startup>()
+                .ConfigureAppConfiguration(builder =>
+                {
+                    builder.AddInMemoryCollection(new List<KeyValuePair<string, string?>>
+                    {
+                        new($"{nameof(RateLimiterOptions)}:{nameof(RateLimiterOptions.RequestLimit)}", "5"),
+                        new($"{nameof(RateLimiterOptions)}:{nameof(RateLimiterOptions.TimeFrame)}", "00:00:05")
+                    });
+                })
                 .ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(_fakeTimeProvider));
@@ -39,14 +49,14 @@ public class RateLimiterTests : IDisposable
     {
         // Arrange
         _fakeTimeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2023, 10, 2)));
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 5; i++)
         {
             var response = await _client.GetAsync("/?clientId=1");
             response.EnsureSuccessStatusCode();
         }
 
         // Act
-        var statusCodes = Enumerable.Range(0, 10) // Every request after 4th one should get 503
+        var statusCodes = Enumerable.Range(0, 10) // Every request after 5th one should get 503
             .Select(_ => _client.GetAsync("/?clientId=1").Result.StatusCode)
             .ToArray();
 
@@ -59,7 +69,7 @@ public class RateLimiterTests : IDisposable
     {
         // Arrange
         _fakeTimeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2023, 10, 2)));
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 5; i++)
         {
             var response = await _client.GetAsync("/?clientId=1");
             response.EnsureSuccessStatusCode();

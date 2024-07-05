@@ -13,6 +13,8 @@ public static class RateLimiterExtensions
 
     public static void UseRequestsTimeFrameRateLimiter(this IApplicationBuilder app)
     {
+        // General note - the requirements say to handle each request on a separate task.
+        // This is handled by the infrastructure in a smarter way (thread pool management).
         app.Use(async (context, next) =>
         {
             var clientId = context.Request.Query["clientId"];
