@@ -4,9 +4,10 @@ Console.WriteLine("Welcome to DOS-R-US!");
 Console.WriteLine("Please enter the amount of http clients you would like to simulate: ");
 
 var input = Console.ReadLine();
-if (string.IsNullOrEmpty(input)) throw new InvalidOperationException("Invalid input! Exiting");
-
-var numberOfClients = int.Parse(input);
+if (!int.TryParse(input, out var numberOfClients))
+{
+    throw new InvalidOperationException("Invalid input! Exiting");
+}
 
 var cancellationTokenSource = new CancellationTokenSource();
 var cancellationToken = cancellationTokenSource.Token;
@@ -16,7 +17,7 @@ var tasks = Enumerable.Range(0, numberOfClients)
     .ToArray();
 
 input = Console.ReadLine();
-if (string.IsNullOrEmpty(input))
+if (string.IsNullOrEmpty(input))    // Enter key input
 {
     cancellationTokenSource.Cancel();
 

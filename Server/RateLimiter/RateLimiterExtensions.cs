@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Server.RateLimiter;
+﻿namespace Server.RateLimiter;
 
 public static class RateLimiterExtensions
 {
