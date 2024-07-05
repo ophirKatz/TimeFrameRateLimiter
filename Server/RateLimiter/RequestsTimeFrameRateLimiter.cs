@@ -3,7 +3,7 @@
 namespace Server.RateLimiter;
 
 // Using record structs for immutability and easy-copying
-public readonly record struct RequestsTimeFrame(DateTimeOffset StartTime, int Count);
+public readonly record struct RequestsTimeFrame(DateTimeOffset StartTime, long Count);
 
 public class RequestsTimeFrameRateLimiter : IRateLimiter
 {

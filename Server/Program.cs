@@ -19,5 +19,5 @@ while (true)
 }
 
 Console.WriteLine("Shutting down...");
-await Task.Delay(TimeSpan.FromSeconds(1));
+await Task.Delay(TimeSpan.FromMilliseconds(500));
 await host.StopAsync();
