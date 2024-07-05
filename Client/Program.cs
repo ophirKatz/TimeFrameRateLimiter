@@ -16,12 +16,20 @@ var tasks = Enumerable.Range(0, numberOfClients)
     .Select(_ => Task.Run(() => SimulateClient(GetRandomClientId(numberOfClients), cancellationToken)))
     .ToArray();
 
-input = Console.ReadLine();
-if (string.IsNullOrEmpty(input))    // Enter key input
+var key = Console.ReadKey();
+if (key.Key == ConsoleKey.Enter)
 {
     cancellationTokenSource.Cancel();
 
-    await Task.WhenAll(tasks);
+    try
+    {
+        await Task.WhenAll(tasks);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+        throw;
+    }
     Console.WriteLine("Gracefully closed all tasks. Goodbye!");
 }
 
@@ -31,7 +39,7 @@ async Task SimulateClient(string clientId, CancellationToken token)
 {
     using var httpClient = new HttpClient
     {
-        BaseAddress = new Uri("http://localhost:5086")
+        BaseAddress = new Uri("http://localhost:5000")
     };
     
     var requestUri = $"?clientId={clientId}";
@@ -45,6 +53,10 @@ async Task SimulateClient(string clientId, CancellationToken token)
             Console.WriteLine($"Request by clientId {clientId} received status {response.StatusCode}");
             // Wait a random time before trying again
             await Task.Delay(TimeSpan.FromMilliseconds(new Random().Next(100, 600)));
+        }
+        catch (HttpRequestException)
+        {
+            break;
         }
         catch (TaskCanceledException)
         {

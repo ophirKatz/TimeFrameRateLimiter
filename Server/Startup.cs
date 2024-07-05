@@ -2,17 +2,20 @@
 
 namespace Server;
 
+// Using Startup because it is reused in tests
 public class Startup
 {
+    private readonly IConfiguration _configuration;
+
+    public Startup(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     public void ConfigureServices(IServiceCollection services)
     {
-        // TODO : Consider reading from appsettings
-        services.AddRequestsTimeFrameRateLimiter(options =>
-        {
-            options.RequestLimit = 5;
-            options.TimeFrame = TimeSpan.FromSeconds(5);
-        });
-
+        var section = _configuration.GetSection(nameof(RateLimiterOptions));
+        services.AddRequestsTimeFrameRateLimiter(options => section.Bind(options));
         services.AddSingleton(TimeProvider.System);
     }
 

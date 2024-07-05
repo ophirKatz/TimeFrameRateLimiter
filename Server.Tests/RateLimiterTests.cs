@@ -46,7 +46,7 @@ public class RateLimiterTests : IDisposable
         }
 
         // Act
-        var statusCodes = Enumerable.Range(0, 10) // Every request after 4th one gets 503
+        var statusCodes = Enumerable.Range(0, 10) // Every request after 4th one should get 503
             .Select(_ => _client.GetAsync("/?clientId=1").Result.StatusCode)
             .ToArray();
 
